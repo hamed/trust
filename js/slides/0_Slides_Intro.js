@@ -49,7 +49,7 @@ SLIDES.push({
 		var o = self.objects;
 
 		// Splash in background
-		self.add({ id:"splash", type:"Splash" });
+		self.add({ id:"splash", type:"Splash", square:true });
 
 		// TITLE TEXT
 		self.add({
@@ -103,7 +103,7 @@ SLIDES.push({
 	id: "intro",
 	onjump: function(self){
 		// Splash in background
-		self.add({ id:"splash", type:"Splash" });
+		self.add({ id:"splash", type:"Splash", square:true });
 	},
 	onstart: function(self){
 

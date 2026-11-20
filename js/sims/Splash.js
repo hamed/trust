@@ -1,8 +1,14 @@
 Loader.addToManifest(Loader.manifestPreload,{
 	splash_peep: "assets/splash/splash_peep.json",
 	connection: "assets/splash/connection.json",
+	fair_square: "assets/splash/fair_square.png",
 	cssAsset13: "assets/ui/sound.png"
 });
+
+// One peep on the opening slide is a square from Fair and Square, the translator's own game.
+// It is the 7th peep of the inner ring: right of the title, level with the start button.
+var SPLASH_SQUARE_INDEX = 6;
+var SPLASH_SQUARE_LINK = "https://hamed.github.io/fair-and-square/?utm_source=trust&utm_medium=referral&utm_campaign=trust&utm_content=iw371m0t";
 
 function Splash(config){
 
@@ -36,7 +42,9 @@ function Splash(config){
 	// PEEPS
 	var peeps = [];
 	self.addPeep = function(x, y){
-		var peep = new SplashPeep({ x:x, y:y, app:app, blush:config.blush });
+		var peep = (config.square && peeps.length==SPLASH_SQUARE_INDEX) ?
+			new SplashSquare({ x:x, y:y, app:app }) :
+			new SplashPeep({ x:x, y:y, app:app, blush:config.blush });
 		peeps.push(peep);
 		peepsContainer.addChild(peep.graphics);
 	};
@@ -166,6 +174,55 @@ function SplashPeep(config){
 		g.rotation = r;
 
 
+	};
+
+}
+
+// The square sways like the peeps but doesn't run from the mouse, so it can be clicked.
+// Hovered, it grows a little and stands straight; clicked, it opens Fair and Square.
+function SplashSquare(config){
+
+	var self = this;
+	self.config = config;
+
+	// Graphics!
+	var SIDE = 40;
+	var g = new PIXI.Sprite(PIXI.loader.resources.fair_square.texture);
+	g.anchor.x = g.anchor.y = 0.5;
+	g.width = g.height = SIDE;
+	var baseScale = g.scale.x;
+	self.graphics = g;
+
+	// Clickable
+	var view = config.app.view;
+	var hover = false;
+	g.interactive = true;
+	g.buttonMode = true;
+	var half = (SIDE/2+8)/baseScale; // a little extra around it, for fingers
+	g.hitArea = new PIXI.Rectangle(-half, -half, half*2, half*2);
+	g.on("pointerover", function(){ hover = true; view.title = "Fair and Square"; });
+	g.on("pointerout", function(){ hover = false; view.removeAttribute("title"); });
+	g.on("pointertap", function(){ window.open(SPLASH_SQUARE_LINK, "_blank"); });
+
+	// Them variables...
+	self.x = config.x;
+	self.y = config.y;
+	var initX = config.x;
+	var initY = config.y;
+	var initRotation = (Math.random()-0.5)*0.6;
+	var radius = 5+Math.random()*15;
+	var swing = 0.05+Math.random()*0.2;
+	var angle = Math.random()*Math.TAU;
+	var speed = (0.05+Math.random()*0.5)/60;
+	var lift = 0; // 0 at rest, 1 when hovered
+
+	self.update = function(delta){
+		angle += speed*delta;
+		lift += ((hover?1:0)-lift)*0.2;
+		g.x = initX + Math.cos(angle)*radius;
+		g.y = initY + Math.sin(angle)*radius;
+		g.rotation = (initRotation + Math.cos(angle)*swing)*(1-lift);
+		g.scale.x = g.scale.y = baseScale*(1+0.25*lift);
 	};
 
 }
